@@ -17,6 +17,11 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 
+#define LORA_MODE   0 // 0-receive/ 1-transmit
+
+uint8_t buf[32];
+
+
 #define GPIO_INPUT_IO_0 11
 #define GPIO_INPUT_PIN_SEL ((1ULL << GPIO_INPUT_IO_0))
 
@@ -43,6 +48,7 @@ static void gpio_task_example(void *arg)
 static void configure_dio0_interrupt_pin();
 
 static void task_tx(void *p);
+void task_rx(void *p);
 
 static void task_tx(void *p)
 {
@@ -55,6 +61,24 @@ static void task_tx(void *p)
     }
 }
 
+
+
+void task_rx(void *p)
+{
+   int x;
+   for(;;) {
+      lora_receive();    // put into receive mode
+      while(lora_received()) {
+         x = lora_receive_packet(buf, sizeof(buf));
+         buf[x] = 0;
+         printf("Received: %s\n", buf);
+         lora_receive();
+      }
+      vTaskDelay(1);
+   }
+}
+
+
 void app_main()
 {
     esp_err_t ret;
@@ -64,7 +88,7 @@ void app_main()
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
-
+    if(LORA_MODE == 1){
     configure_dio0_interrupt_pin();
 
     printf("Initializing lora \n");
@@ -85,6 +109,14 @@ void app_main()
 
     lora_enable_crc();
     xTaskCreate(&task_tx, "task_tx", 2048, NULL, 5, NULL);
+    }
+    else if(LORA_MODE == 0){
+        printf("starting lora receive mode \n");
+        lora_init();
+        lora_set_frequency(433e6);
+        lora_enable_crc();
+        xTaskCreate(&task_rx, "task_rx", 2048, NULL, 5, NULL);
+    }
 }
 
 static void configure_dio0_interrupt_pin()

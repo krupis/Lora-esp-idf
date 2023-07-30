@@ -29,15 +29,20 @@ void lora_dump_registers(void);
 int lora_read_reg(int reg);
 void lora_write_reg(int reg, int val);
 
-#define LORA_CS_PIN         21
-
-#define LORA_RST_PIN        20
-
-#define LORA_MOSI_PIN       45
-
-#define LORA_MISOx_PIN      47
-
-#define LORA_SCK_PIN        48
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+    #define LORA_CS_PIN         21
+    #define LORA_RST_PIN        20
+    #define LORA_MOSI_PIN       45
+    #define LORA_MISOx_PIN      47
+    #define LORA_SCK_PIN        48
+#endif
+#ifdef CONFIG_IDF_TARGET_ESP32
+    #define LORA_CS_PIN         21
+    #define LORA_RST_PIN        13
+    #define LORA_MOSI_PIN       23
+    #define LORA_MISOx_PIN      19
+    #define LORA_SCK_PIN        22
+#endif
 
 
 

@@ -346,7 +346,7 @@ int lora_init(void)
    assert(ret == ESP_OK);
 
    spi_device_interface_config_t dev = {
-       .clock_speed_hz = 9000000,
+       .clock_speed_hz = 4000000,
        .mode = 0,
        .spics_io_num = -1,
        .queue_size = 1,
@@ -368,8 +368,10 @@ int lora_init(void)
    while (i++ < TIMEOUT_RESET)
    {
       version = lora_read_reg(REG_VERSION);
-      if (version == 0x12)
+      if (version == 0x12){
+         printf("lora init ok \n");
          break;
+      }
       vTaskDelay(2);
    }
    assert(i <= TIMEOUT_RESET + 1); // at the end of the loop above, the max value i can reach is TIMEOUT_RESET + 1

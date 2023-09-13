@@ -21,6 +21,17 @@
 static void get_wake_up_reason();
 const int wakeup_time_sec = 60;
 
+// check if target is esp32s3
+#ifdef CONFIG_IDF_TARGET_ESP32
+	esp_pm_config_esp32_t pm_config;
+	esp_pm_config_esp32_t pm_config2;
+#endif
+
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+	esp_pm_config_esp32s3_t pm_config;
+	esp_pm_config_esp32s3_t pm_config2;
+#endif
+
 
 #if CONFIG_SENDER
 
@@ -45,16 +56,9 @@ void task_tx(void *pvParameters)
 
 
 		#if CONFIG_PM_ENABLE
-			// Configure dynamic frequency scaling:
-			// maximum and minimum frequencies are set in sdkconfig,
-			// automatic light sleep is enabled if tickless idle support is enabled.
-			esp_pm_config_esp32s3_t pm_config2 = {
-					.max_freq_mhz = 80,
-					.min_freq_mhz = 10,
-		#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
-					.light_sleep_enable = false
-		#endif
-			};
+			pm_config2.max_freq_mhz = 80;
+			pm_config2.min_freq_mhz = 10;
+			pm_config2.light_sleep_enable = false;
 			ESP_ERROR_CHECK( esp_pm_configure(&pm_config2) );
 		#endif // CONFIG_PM_ENABLE
 		
@@ -105,13 +109,9 @@ void app_main()
 	get_wake_up_reason();
 	
 	#if CONFIG_PM_ENABLE
-		esp_pm_config_esp32s3_t pm_config = {
-				.max_freq_mhz = 80,
-				.min_freq_mhz = 10,
-		#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
-					.light_sleep_enable = true
-		#endif
-		};
+		pm_config.max_freq_mhz = 80;
+		pm_config.min_freq_mhz = 10;
+		pm_config.light_sleep_enable = true;
 		ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
 	#endif // CONFIG_PM_ENABLE
 

@@ -16,12 +16,11 @@
 #include "soc/rtc.h"
 #include "nvs_flash.h"
 #include "nvs.h"
-
 #include "lora.h"
 
 static void get_wake_up_reason();
 const int wakeup_time_sec = 60;
-esp_pm_config_esp32_t pm_config;
+
 
 #if CONFIG_SENDER
 
@@ -49,7 +48,7 @@ void task_tx(void *pvParameters)
 			// Configure dynamic frequency scaling:
 			// maximum and minimum frequencies are set in sdkconfig,
 			// automatic light sleep is enabled if tickless idle support is enabled.
-			esp_pm_config_esp32_t pm_config2 = {
+			esp_pm_config_esp32s3_t pm_config2 = {
 					.max_freq_mhz = 80,
 					.min_freq_mhz = 10,
 		#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
@@ -106,7 +105,7 @@ void app_main()
 	get_wake_up_reason();
 	
 	#if CONFIG_PM_ENABLE
-		esp_pm_config_esp32_t pm_config = {
+		esp_pm_config_esp32s3_t pm_config = {
 				.max_freq_mhz = 80,
 				.min_freq_mhz = 10,
 		#if CONFIG_FREERTOS_USE_TICKLESS_IDLE
@@ -142,6 +141,8 @@ void app_main()
 	int cr = 1;
 	int bw = 7;
 	int sf = 7;
+	int prea = 10;
+
 #if CONFIF_ADVANCED
 	cr = CONFIG_CODING_RATE
 	bw = CONFIG_BANDWIDTH;
@@ -162,6 +163,9 @@ void app_main()
 	//lora_set_spreading_factor(CONFIG_SF_RATE);
 	//int sf = lora_get_spreading_factor();
 	ESP_LOGI(pcTaskGetName(NULL), "spreading_factor=%d", sf);
+
+	lora_set_preamble_length(prea);
+	ESP_LOGI(pcTaskGetName(NULL), "Preamble=%d", prea);
 
 #if CONFIG_SENDER
 	xTaskCreate(&task_tx, "TX", 1024*3, NULL, 5, NULL);
